@@ -1,14 +1,11 @@
 package com.olx.service;
 
-import com.olx.dto.AuthenticationRequest;
 import com.olx.dto.User;
 import com.olx.entity.UserEntity;
 import com.olx.repository.UserRepository;
 import com.olx.utils.LoginConverterUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,10 +18,10 @@ public class LoginServiceImpl implements LoginService {
     ModelMapper modelMapper;
 
     @Override
-    public boolean logout(String authToken) {
-        UserEntity userEntity = userRepository.findByAuthToken(authToken);
+    public boolean logout(String username) {
+        UserEntity userEntity = userRepository.findByUsername(username);
         if (userEntity != null) {
-            userEntity.setAuthToken(null);
+            userEntity.setActive(false);
             userRepository.save(userEntity);
         }
         return userEntity != null && userRepository.findById(userEntity.getId()).isPresent();
@@ -32,16 +29,13 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public User registerUser(User user) {
-        return LoginConverterUtil.convertEntityToDto(modelMapper, LoginConverterUtil.convertDtoToEntity(modelMapper, user));
+        user.setRole("ROLE_USER");
+        return LoginConverterUtil.convertEntityToDto(modelMapper, userRepository.save(LoginConverterUtil.convertDtoToEntity(modelMapper, user)));
     }
 
     @Override
-    public User getUserInfo(String authToken) {
-        return LoginConverterUtil.convertEntityToDto(modelMapper, userRepository.findByAuthToken(authToken));
+    public User getUserInfo(String username) {
+        return LoginConverterUtil.convertEntityToDto(modelMapper, userRepository.findByUsername(username));
     }
 
-    @Override
-    public ResponseEntity<String> authenticateUser(AuthenticationRequest user) {
-        return null;
-    }
 }

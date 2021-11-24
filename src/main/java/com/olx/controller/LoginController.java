@@ -11,14 +11,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "olx")
+@RequestMapping(value = "/olx/user")
 public class LoginController {
 
     @Autowired
@@ -34,18 +31,11 @@ public class LoginController {
     UserDetailsService userDetailsService;
 
     @ApiOperation(value = "Authenticate user in the application.")
-    @PostMapping(value = "/user/authenticate",
+    @PostMapping(value = "/authenticate",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<String> login(@RequestBody AuthenticationRequest authenticationRequest) {
         try {
-            Authentication authentication
-                    = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            authenticationRequest.getUsername(),
-                            authenticationRequest.getPassword())
-            );
-
             return new ResponseEntity<>(
                     jwtUtil.generateToken(
                             userDetailsService.loadUserByUsername(authenticationRequest.getUsername())
@@ -57,33 +47,41 @@ public class LoginController {
     }
 
     @ApiOperation(value = "Logs out authenticated user from the application.")
-    @PostMapping(value = "/user/logout")
-    public boolean logout(@RequestHeader("Authorization") String authToken) {
+    @DeleteMapping(value = "/logout")
+    public ResponseEntity<Boolean> logout(@RequestHeader("Authorization") String authToken) {
 
-        return loginService.logout(authToken);
+        ResponseEntity<Boolean> validTokenResponse = validateToken(authToken);
+        if (Boolean.TRUE.equals(validTokenResponse.getBody())) {
+            ResponseEntity<String> usernameResponse = getUsername(authToken);
+            return new ResponseEntity<>(loginService.logout(usernameResponse.getBody()), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @ApiOperation(value = "Register a user in the application.")
-    @PostMapping(value = "/user")
-    public User registerUser(@RequestBody User user) {
-        return loginService.registerUser(user);
+    @PostMapping(value = "",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<Object> registerUser(@RequestBody User user) {
+        return new ResponseEntity<>(loginService.registerUser(user), HttpStatus.CREATED);
     }
 
     @ApiOperation(value = "Get information of a user from the application.")
-    @GetMapping(value = "/user")
-    public ResponseEntity<User> getUserInfo(@RequestHeader("Authorization") String authToken) {
-        String token = authToken.replace("Bearer ", "");
-        String username = jwtUtil.extractUsername(token);
-        if (!username.isEmpty()) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (jwtUtil.validateToken(token, userDetails)) {
-                return new ResponseEntity<>(loginService.getUserInfo(username), HttpStatus.OK);
-            }
+    @GetMapping(value = "",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<Object> getUserInfo(@RequestHeader("Authorization") String authToken) {
+
+        ResponseEntity<Boolean> validTokenResponse = validateToken(authToken);
+        if (Boolean.TRUE.equals(validTokenResponse.getBody())) {
+            ResponseEntity<String> usernameResponse = getUsername(authToken);
+            return new ResponseEntity<>(loginService.getUserInfo(usernameResponse.getBody()), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
-        return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
     }
 
-    @GetMapping(value = "/user/validate/token")
+    @GetMapping(value = "/validate/token")
     public ResponseEntity<Boolean> validateToken(@RequestHeader("Authorization") String authToken) {
         try {
             String token = authToken.replace("Bearer ", "");
@@ -97,7 +95,7 @@ public class LoginController {
         }
     }
 
-    @GetMapping(value = "/user/name")
+    @GetMapping(value = "/name")
     public ResponseEntity<String> getUsername(@RequestHeader("Authorization") String authToken) {
         try {
             String token = authToken.replace("Bearer ", "");

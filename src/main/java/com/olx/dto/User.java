@@ -9,20 +9,20 @@ public class User {
     private String lastName;
     private String password;
     private String phoneNumber;
-    private String authToken;
+    private String role;
 
     public User() {
 
     }
 
-    public User(String email, String username, String firstName, String lastName, String password, String phoneNumber, String authToken) {
+    public User(String email, String username, String firstName, String lastName, String password, String phoneNumber, String role) {
         this.email = email;
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
         this.phoneNumber = phoneNumber;
-        this.authToken = authToken;
+        this.role = role;
     }
 
     public <R> User(String username, String s, R collect) {
@@ -77,12 +77,12 @@ public class User {
         this.phoneNumber = phoneNumber;
     }
 
-    public String getAuthToken() {
-        return authToken;
+    public String getRole() {
+        return role;
     }
 
-    public void setAuthToken(String authToken) {
-        this.authToken = authToken;
+    public void setRole(String role) {
+        this.role = role;
     }
 
     @Override
@@ -94,7 +94,7 @@ public class User {
                 ", lastName='" + lastName + '\'' +
                 ", password='" + password + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
-                ", authToken='" + authToken + '\'' +
+                ", role='" + role + '\'' +
                 '}';
     }
 }

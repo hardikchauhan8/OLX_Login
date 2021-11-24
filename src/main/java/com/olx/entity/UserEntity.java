@@ -27,8 +27,8 @@ public class UserEntity {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column(name = "auth_token")
-    private String authToken;
+    @Column(name = "active")
+    private boolean active;
 
     @Column(name = "role")
     private final String role = "ROLE_USER";
@@ -37,14 +37,14 @@ public class UserEntity {
 
     }
 
-    public UserEntity(String email, String username, String firstName, String lastName, String password, String phoneNumber, String authToken) {
+    public UserEntity(String email, String username, String firstName, String lastName, String password, String phoneNumber, boolean active) {
         this.email = email;
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
         this.phoneNumber = phoneNumber;
-        this.authToken = authToken;
+        this.active = active;
     }
 
     public int getId() {
@@ -103,12 +103,12 @@ public class UserEntity {
         this.phoneNumber = phoneNumber;
     }
 
-    public String getAuthToken() {
-        return authToken;
+    public boolean isActive() {
+        return active;
     }
 
-    public void setAuthToken(String authToken) {
-        this.authToken = authToken;
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public String getRole() {
@@ -124,7 +124,7 @@ public class UserEntity {
                 ", lastName='" + lastName + '\'' +
                 ", password='" + password + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
-                ", authToken='" + authToken + '\'' +
+                ", active='" + active + '\'' +
                 '}';
     }
 }
