@@ -9,9 +9,6 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
-    @Column(name = "email", unique = true, nullable = false)
-    private String email;
-
     @Column(name = "username", unique = true, nullable = false)
     private String username;
 
@@ -29,6 +26,9 @@ public class UserEntity {
 
     @Column(name = "last_name")
     private String lastName;
+
+    @Column(name = "email")
+    private String email;
 
     public UserEntity() {
 
