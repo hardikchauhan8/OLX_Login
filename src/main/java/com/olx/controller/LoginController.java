@@ -11,6 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,23 +32,32 @@ public class LoginController {
     @Autowired
     UserDetailsService userDetailsService;
 
+    // 1
     @ApiOperation(value = "Authenticate user in the application.")
     @PostMapping(value = "/authenticate",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<String> login(@RequestBody AuthenticationRequest authenticationRequest) {
         try {
-            String token = jwtUtil.generateToken(userDetailsService.loadUserByUsername(authenticationRequest.getUsername()));
-            loginService.login(authenticationRequest.getUsername());
-            return new ResponseEntity<>(token, HttpStatus.OK);
+
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword()));
+            if (authentication.isAuthenticated()) {
+                String token = jwtUtil.generateToken(userDetailsService.loadUserByUsername(authenticationRequest.getUsername()));
+                return new ResponseEntity<>(token, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+            }
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
+    // 2
     @ApiOperation(value = "Logs out authenticated user from the application.")
     @DeleteMapping(value = "/logout")
     public ResponseEntity<Boolean> logout(@RequestHeader("Authorization") String authToken) {
+
+
 
         ResponseEntity<Boolean> validTokenResponse = validateToken(authToken);
         if (Boolean.TRUE.equals(validTokenResponse.getBody())) {
@@ -57,14 +68,21 @@ public class LoginController {
         }
     }
 
+    // 3
     @ApiOperation(value = "Register a user in the application.")
     @PostMapping(value = "",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<Object> registerUser(@RequestBody User user) {
-        return new ResponseEntity<>(loginService.registerUser(user), HttpStatus.CREATED);
+        User newUser = loginService.registerUser(user);
+        if (newUser != null) {
+            return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
     }
 
+    // 4
     @ApiOperation(value = "Get information of a user from the application.")
     @GetMapping(value = "",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -79,6 +97,7 @@ public class LoginController {
         }
     }
 
+    // Validate Token
     @GetMapping(value = "/validate/token")
     public ResponseEntity<Boolean> validateToken(@RequestHeader("Authorization") String authToken) {
         try {
@@ -87,15 +106,13 @@ public class LoginController {
             if (username.isEmpty()) {
                 return new ResponseEntity<>(false, HttpStatus.UNAUTHORIZED);
             }
-            if (loginService.isUserInactive(username)) {
-                return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
-            }
             return new ResponseEntity<>(jwtUtil.validateToken(token, userDetailsService.loadUserByUsername(username)), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
         }
     }
 
+    // Get Username
     @GetMapping(value = "/name")
     public ResponseEntity<String> getUsername(@RequestHeader("Authorization") String authToken) {
         try {
