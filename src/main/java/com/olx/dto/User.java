@@ -8,25 +8,19 @@ public class User {
     private String firstName;
     private String lastName;
     private String password;
-    private String phoneNumber;
     private String role;
 
     public User() {
 
     }
 
-    public User(String email, String username, String firstName, String lastName, String password, String phoneNumber, String role) {
+    public User(String email, String username, String firstName, String lastName, String password, String role) {
         this.email = email;
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
-        this.phoneNumber = phoneNumber;
         this.role = role;
-    }
-
-    public <R> User(String username, String s, R collect) {
-
     }
 
     public String getEmail() {
@@ -69,14 +63,6 @@ public class User {
         this.password = password;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
     public String getRole() {
         return role;
     }
@@ -93,7 +79,6 @@ public class User {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", password='" + password + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
                 ", role='" + role + '\'' +
                 '}';
     }

@@ -2,7 +2,7 @@ package com.olx.entity;
 
 import javax.persistence.*;
 
-@Entity(name = "USER")
+@Entity(name = "USERS")
 public class UserEntity {
 
     @Id
@@ -15,35 +15,31 @@ public class UserEntity {
     @Column(name = "username", unique = true, nullable = false)
     private String username;
 
+    @Column(name = "password", length = 30, nullable = false)
+    private String password;
+
+    @Column(name = "role")
+    private final String role = "ROLE_USER";
+
+    @Column(name = "active")
+    private boolean active;
+
     @Column(name = "first_name")
     private String firstName;
 
     @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "password", length = 30, nullable = false)
-    private String password;
-
-    @Column(name = "phone_number")
-    private String phoneNumber;
-
-    @Column(name = "active")
-    private boolean active;
-
-    @Column(name = "role")
-    private final String role = "ROLE_USER";
-
     public UserEntity() {
 
     }
 
-    public UserEntity(String email, String username, String firstName, String lastName, String password, String phoneNumber, boolean active) {
+    public UserEntity(String email, String username, String firstName, String lastName, String password, boolean active) {
         this.email = email;
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
-        this.phoneNumber = phoneNumber;
         this.active = active;
     }
 
@@ -95,14 +91,6 @@ public class UserEntity {
         this.password = password;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
     public boolean isActive() {
         return active;
     }
@@ -123,7 +111,6 @@ public class UserEntity {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", password='" + password + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
                 ", active='" + active + '\'' +
                 '}';
     }

@@ -38,4 +38,16 @@ public class LoginServiceImpl implements LoginService {
         return LoginConverterUtil.convertEntityToDto(modelMapper, userRepository.findByUsername(username));
     }
 
+    @Override
+    public boolean isUserInactive(String username) {
+        return !userRepository.findByUsername(username).isActive();
+    }
+
+    @Override
+    public void login(String username) {
+        UserEntity userEntity = userRepository.findByUsername(username);
+        userEntity.setActive(true);
+        userRepository.save(userEntity);
+    }
+
 }

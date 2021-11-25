@@ -36,11 +36,9 @@ public class LoginController {
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<String> login(@RequestBody AuthenticationRequest authenticationRequest) {
         try {
-            return new ResponseEntity<>(
-                    jwtUtil.generateToken(
-                            userDetailsService.loadUserByUsername(authenticationRequest.getUsername())
-                    ), HttpStatus.OK
-            );
+            String token = jwtUtil.generateToken(userDetailsService.loadUserByUsername(authenticationRequest.getUsername()));
+            loginService.login(authenticationRequest.getUsername());
+            return new ResponseEntity<>(token, HttpStatus.OK);
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -88,6 +86,9 @@ public class LoginController {
             String username = jwtUtil.extractUsername(token);
             if (username.isEmpty()) {
                 return new ResponseEntity<>(false, HttpStatus.UNAUTHORIZED);
+            }
+            if (loginService.isUserInactive(username)) {
+                return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
             }
             return new ResponseEntity<>(jwtUtil.validateToken(token, userDetailsService.loadUserByUsername(username)), HttpStatus.OK);
         } catch (Exception e) {

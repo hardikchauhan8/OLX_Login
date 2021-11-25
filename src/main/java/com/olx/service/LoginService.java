@@ -9,4 +9,8 @@ public interface LoginService {
     User registerUser(User user);
 
     User getUserInfo(String username);
+
+    boolean isUserInactive(String username);
+
+    void login(String username);
 }
