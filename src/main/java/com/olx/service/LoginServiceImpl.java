@@ -1,6 +1,8 @@
 package com.olx.service;
 
+import com.olx.dto.BlacklistedToken;
 import com.olx.dto.User;
+import com.olx.repository.BlacklistedTokenRepository;
 import com.olx.repository.UserRepository;
 import com.olx.utils.LoginConverterUtil;
 import org.modelmapper.ModelMapper;
@@ -18,10 +20,11 @@ public class LoginServiceImpl implements LoginService {
     ModelMapper modelMapper;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    BlacklistedTokenRepository blacklistedTokenRepository;
 
     @Override
-    public boolean logout(String username) {
+    public boolean logout(String authToken) {
+        blacklistedTokenRepository.save(new BlacklistedToken(authToken));
         return true;
     }
 
@@ -38,5 +41,11 @@ public class LoginServiceImpl implements LoginService {
     @Override
     public User getUserInfo(String username) {
         return LoginConverterUtil.convertEntityToDto(modelMapper, userRepository.findByUsername(username));
+    }
+
+    @Override
+    public boolean validateLogin(String authToken) {
+        BlacklistedToken blacklistedToken = blacklistedTokenRepository.findByBlacklistedJwt(authToken);
+        return blacklistedToken != null;
     }
 }

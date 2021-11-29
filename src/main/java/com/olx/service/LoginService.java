@@ -9,4 +9,6 @@ public interface LoginService {
     User registerUser(User user);
 
     User getUserInfo(String username);
+
+    boolean validateLogin(String authToken);
 }

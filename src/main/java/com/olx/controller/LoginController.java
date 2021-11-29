@@ -39,7 +39,6 @@ public class LoginController {
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<String> login(@RequestBody AuthenticationRequest authenticationRequest) {
         try {
-
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword()));
             if (authentication.isAuthenticated()) {
                 String token = jwtUtil.generateToken(userDetailsService.loadUserByUsername(authenticationRequest.getUsername()));
@@ -57,12 +56,9 @@ public class LoginController {
     @DeleteMapping(value = "/logout")
     public ResponseEntity<Boolean> logout(@RequestHeader("Authorization") String authToken) {
 
-
-
         ResponseEntity<Boolean> validTokenResponse = validateToken(authToken);
         if (Boolean.TRUE.equals(validTokenResponse.getBody())) {
-            ResponseEntity<String> usernameResponse = getUsername(authToken);
-            return new ResponseEntity<>(loginService.logout(usernameResponse.getBody()), HttpStatus.OK);
+            return new ResponseEntity<>(loginService.logout(authToken), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
@@ -100,6 +96,9 @@ public class LoginController {
     // Validate Token
     @GetMapping(value = "/validate/token")
     public ResponseEntity<Boolean> validateToken(@RequestHeader("Authorization") String authToken) {
+        if(loginService.validateLogin(authToken)){
+            return new ResponseEntity<>(false, HttpStatus.UNAUTHORIZED);
+        }
         try {
             String token = authToken.replace("Bearer ", "");
             String username = jwtUtil.extractUsername(token);
